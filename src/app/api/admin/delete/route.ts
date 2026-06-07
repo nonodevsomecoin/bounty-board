@@ -1,0 +1,28 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyIdentity } from '@/lib/auth/guard';
+import { isAdmin } from '@/lib/db/admins';
+import { deleteBounty } from '@/lib/db/bounties';
+
+export async function POST(req: NextRequest) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const guard = verifyIdentity(body);
+  if (!guard.ok) {
+    return NextResponse.json({ ok: false, error: guard.error }, { status: guard.status });
+  }
+  if (!(await isAdmin(guard.wallet))) {
+    return NextResponse.json({ ok: false, error: 'Not authorized' }, { status: 403 });
+  }
+
+  const id = String(body.id ?? '');
+  if (!id) {
+    return NextResponse.json({ ok: false, error: 'Missing bounty id' }, { status: 400 });
+  }
+  await deleteBounty(id);
+  return NextResponse.json({ ok: true, data: { id, deleted: true } });
+}
