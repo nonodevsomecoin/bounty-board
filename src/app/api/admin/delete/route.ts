@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/auth/adminSession.server';
 import { deleteBounty } from '@/lib/db/bounties';
-import { isBackendConfigured } from '@/lib/config';
+import { isDbConfigured } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
-  if (!isBackendConfigured()) {
+  if (!isDbConfigured()) {
     return NextResponse.json(
-      { ok: false, error: 'Preview mode — backend not configured yet.' },
+      { ok: false, error: 'Backend not configured.' },
       { status: 503 },
     );
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAnon, isSupabaseConfigured } from '@/lib/db/client';
+import { getTokenMint } from '@/lib/tokenConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,13 @@ export async function GET() {
         code: (error as { code?: string }).code ?? null,
       });
     }
-    return NextResponse.json({ ok: true, env, rows: data?.length ?? 0 });
+    const tokenMint = await getTokenMint();
+    return NextResponse.json({
+      ok: true,
+      env,
+      rows: data?.length ?? 0,
+      token_live: !!tokenMint,
+    });
   } catch (e) {
     return NextResponse.json({
       ok: false,

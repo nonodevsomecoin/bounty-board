@@ -13,13 +13,13 @@ export function requireEnv(name: string): string {
   return v;
 }
 
-// True once the backend is fully wired (Supabase + token mint). When false, the
-// app runs in preview mode: read paths show demo data and write routes return a
-// friendly 503 instead of crashing. Server-only (checks the service-role key).
-export function isBackendConfigured(): boolean {
+// True once the database is wired (Supabase URL + anon + service role). The token
+// mint is NOT part of this — it can be set at runtime from the admin panel so the
+// site is fully operational (reads + admin) before the coin launches.
+export function isDbConfigured(): boolean {
   return (
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
-    !!process.env.NEXT_PUBLIC_TOKEN_MINT
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    !!process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 }

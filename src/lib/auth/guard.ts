@@ -3,7 +3,8 @@ import { buildMessage, extractTimestamp, isTimestampFresh } from '@/lib/auth/mes
 import { getWalletUsdValue } from '@/lib/eligibility';
 import { getTokenBalance } from '@/lib/solana/tokenBalance';
 import { getTokenPriceUsd } from '@/lib/price/jupiterPrice';
-import { SOLANA_RPC_URL, TOKEN_MINT, MIN_USD } from '@/lib/config';
+import { SOLANA_RPC_URL, MIN_USD } from '@/lib/config';
+import { getTokenMint } from '@/lib/tokenConfig';
 
 export interface SignedBody {
   wallet?: unknown;
@@ -52,9 +53,17 @@ export async function verifyHolder(
 ): Promise<GuardResult> {
   const id = verifyIdentity(body, spec, nowMs);
   if (!id.ok) return id;
+  const mint = await getTokenMint();
+  if (!mint) {
+    return {
+      ok: false,
+      status: 503,
+      error: 'Proposals and voting open when the token goes live. Stay tuned! 🚀',
+    };
+  }
   const usd = await getWalletUsdValue(id.wallet, {
-    getBalance: (w) => getTokenBalance(SOLANA_RPC_URL, w, TOKEN_MINT),
-    getPrice: () => getTokenPriceUsd(TOKEN_MINT),
+    getBalance: (w) => getTokenBalance(SOLANA_RPC_URL, w, mint),
+    getPrice: () => getTokenPriceUsd(mint),
   });
   if (usd < MIN_USD) {
     return { ok: false, status: 403, error: 'You must hold at least $10 of the token' };
