@@ -64,10 +64,13 @@ export async function insertBounty(input: {
   return data as Bounty;
 }
 
-export async function markBountyDone(id: string): Promise<void> {
+export async function markBountyDone(
+  id: string,
+  proofUrl: string | null = null,
+): Promise<void> {
   const { error } = await supabaseServer()
     .from('bounties')
-    .update({ status: 'done' })
+    .update({ status: 'done', proof_url: proofUrl })
     .eq('id', id);
   if (error) throw error;
 }

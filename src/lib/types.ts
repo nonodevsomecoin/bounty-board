@@ -9,6 +9,7 @@ export interface Bounty {
   status: BountyStatus;
   created_at: string;
   votes_count: number;
+  proof_url: string | null;
 }
 
 export type ApiResult<T> =

@@ -15,11 +15,19 @@ export function requireEnv(name: string): string {
 
 // True once the backend is fully wired (Supabase + token mint). When false, the
 // app runs in preview mode: read paths show demo data and write routes return a
-// friendly 503 instead of crashing.
+// friendly 503 instead of crashing. Server-only (checks the service-role key).
 export function isBackendConfigured(): boolean {
   return (
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
     !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
     !!process.env.NEXT_PUBLIC_TOKEN_MINT
+  );
+}
+
+// Client-safe preview check: only inspects NEXT_PUBLIC_ vars (the service-role
+// key is never in the client bundle), so this is usable in client components.
+export function isPreviewMode(): boolean {
+  return (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_TOKEN_MINT
   );
 }

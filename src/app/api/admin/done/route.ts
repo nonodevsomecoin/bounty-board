@@ -32,6 +32,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Not authorized' }, { status: 403 });
   }
 
-  await markBountyDone(id);
-  return NextResponse.json({ ok: true, data: { id, status: 'done' } });
+  // Optional proof link (photo/video) attached when completing the bounty.
+  const rawProof = body.proof_url;
+  let proofUrl: string | null = null;
+  if (rawProof !== undefined && rawProof !== null && rawProof !== '') {
+    if (typeof rawProof !== 'string' || rawProof.length > 500 || !/^https?:\/\//i.test(rawProof.trim())) {
+      return NextResponse.json({ ok: false, error: 'Proof must be a valid http(s) URL' }, { status: 400 });
+    }
+    proofUrl = rawProof.trim();
+  }
+
+  await markBountyDone(id, proofUrl);
+  return NextResponse.json({ ok: true, data: { id, status: 'done', proof_url: proofUrl } });
 }

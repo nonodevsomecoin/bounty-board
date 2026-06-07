@@ -15,6 +15,7 @@ export const demoActiveBounties: Bounty[] = [
     status: 'active',
     created_at: hoursAgo(3),
     votes_count: 412,
+    proof_url: null,
   },
   {
     id: 'demo-2',
@@ -25,6 +26,7 @@ export const demoActiveBounties: Bounty[] = [
     status: 'active',
     created_at: hoursAgo(6),
     votes_count: 288,
+    proof_url: null,
   },
   {
     id: 'demo-3',
@@ -35,6 +37,7 @@ export const demoActiveBounties: Bounty[] = [
     status: 'active',
     created_at: hoursAgo(26),
     votes_count: 154,
+    proof_url: null,
   },
   {
     id: 'demo-4',
@@ -45,6 +48,7 @@ export const demoActiveBounties: Bounty[] = [
     status: 'active',
     created_at: hoursAgo(40),
     votes_count: 97,
+    proof_url: null,
   },
 ];
 
@@ -58,5 +62,6 @@ export const demoDoneBounties: Bounty[] = [
     status: 'done',
     created_at: hoursAgo(120),
     votes_count: 203,
+    proof_url: 'https://x.com/example/status/1234567890',
   },
 ];

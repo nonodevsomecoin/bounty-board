@@ -74,6 +74,7 @@ ni pour les droits admin.
 | status | text | `active` (défaut) ou `done` |
 | created_at | timestamptz | défaut now() |
 | votes_count | int | compteur dénormalisé, défaut 0 |
+| proof_url | text (nullable) | lien de preuve (photo/vidéo) ajouté par l'admin à la complétion |
 
 ### Table `votes`
 | champ | type | notes |

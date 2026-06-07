@@ -9,6 +9,8 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
   const [count, setCount] = useState(bounty.votes_count);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [doneOpen, setDoneOpen] = useState(false);
+  const [proof, setProof] = useState('');
 
   async function vote() {
     if (!connected) { setMsg('Connect your wallet first'); return; }
@@ -25,11 +27,15 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
     }
   }
 
-  async function adminAction(kind: 'done' | 'delete') {
+  async function adminAction(kind: 'done' | 'delete', proofUrl?: string) {
     setBusy(true); setMsg('');
     try {
       const signed = await sign(kind, bounty.id);
-      const data = await postJson(`/api/admin/${kind}`, { ...signed, id: bounty.id });
+      const payload =
+        kind === 'done'
+          ? { ...signed, id: bounty.id, proof_url: proofUrl?.trim() || null }
+          : { ...signed, id: bounty.id };
+      const data = await postJson(`/api/admin/${kind}`, payload);
       if (data.ok) location.reload();
       else setMsg(data.error ?? 'Error');
     } catch (e) {
@@ -52,10 +58,32 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
           reward {bounty.reward_sol} SOL · by {bounty.author_wallet.slice(0, 4)}…
           {bounty.author_wallet.slice(-2)} · {new Date(bounty.created_at).toLocaleDateString()}
         </div>
+        {bounty.proof_url && (
+          <a className="proof-link" href={bounty.proof_url} target="_blank" rel="noopener noreferrer">
+            ↗ view proof
+          </a>
+        )}
         {admin && (
           <div className="admin-actions">
-            <button onClick={() => adminAction('done')} disabled={busy}>mark done</button>
-            <button onClick={() => adminAction('delete')} disabled={busy}>delete</button>
+            {!doneOpen ? (
+              <>
+                <button onClick={() => setDoneOpen(true)} disabled={busy}>mark done</button>
+                <button onClick={() => adminAction('delete')} disabled={busy}>delete</button>
+              </>
+            ) : (
+              <div className="done-form">
+                <input
+                  className="input"
+                  placeholder="proof link (optional) — https://…"
+                  value={proof}
+                  onChange={(e) => setProof(e.target.value)}
+                />
+                <div className="form-actions">
+                  <button onClick={() => adminAction('done', proof)} disabled={busy}>confirm done</button>
+                  <button onClick={() => { setDoneOpen(false); setProof(''); }} disabled={busy}>cancel</button>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {msg && <div className="row-error">{msg}</div>}

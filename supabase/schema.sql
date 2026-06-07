@@ -11,7 +11,8 @@ create table if not exists bounties (
   author_wallet text not null,
   status        text not null default 'active' check (status in ('active','done')),
   created_at    timestamptz not null default now(),
-  votes_count   int not null default 0
+  votes_count   int not null default 0,
+  proof_url     text
 );
 
 create table if not exists votes (
