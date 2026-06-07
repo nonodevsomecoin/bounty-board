@@ -51,7 +51,7 @@ export function ProposeForm() {
         <button onClick={submit} disabled={busy}>post</button>
         <button onClick={() => setOpen(false)} disabled={busy}>cancel</button>
       </div>
-      <div className="hint">hold ≥ $10 of $TICKER to post · 5 min between posts</div>
+      <div className="hint">hold ≥ $10 of the token to post · 5 min between posts</div>
       {msg && <div className="row-error">{msg}</div>}
     </div>
   );

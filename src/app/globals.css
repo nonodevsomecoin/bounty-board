@@ -25,7 +25,8 @@ body {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 0; border-bottom: 1px solid #1f4d2f; margin-bottom: 8px;
 }
-.brand { color: var(--green); font-weight: bold; }
+.brand { color: var(--green); font-weight: bold; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.brand img { display: block; }
 .brand-dim { color: var(--green-dim); opacity: .6; }
 .nav-right { display: flex; gap: 16px; align-items: center; }
 .nav-link { color: var(--green-dim); text-decoration: none; }

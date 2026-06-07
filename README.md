@@ -1,4 +1,4 @@
-# $TICKER Bounties
+# Bounty-board
 
 Community bounty board for a pump.fun memecoin. Token holders propose marketing
 bounties and upvote them. Top 10 + Done pages. Admin moderation.

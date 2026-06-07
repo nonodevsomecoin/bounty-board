@@ -10,7 +10,7 @@ export function buildMessage(
 ): string {
   const target = resourceId ? `${action} (id: ${resourceId})` : action;
   return [
-    `$TICKER Bounties — proving wallet ownership to ${target}.`,
+    `Bounty-board — proving wallet ownership to ${target}.`,
     `Timestamp: ${timestampMs}`,
   ].join('\n');
 }

@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: '$TICKER Bounties',
-  description: 'Community bounty board for $TICKER',
+  title: 'Bounty-board',
+  description: 'Community marketing bounty board — propose, upvote, get it done.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

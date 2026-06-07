@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ConnectWallet } from './ConnectWallet';
 
 export function NavBar({ active }: { active: 'board' | 'top' | 'done' }) {
@@ -9,7 +10,10 @@ export function NavBar({ active }: { active: 'board' | 'top' | 'done' }) {
   );
   return (
     <nav className="nav">
-      <div className="brand">▮ $TICKER<span className="brand-dim">/bounties</span></div>
+      <Link href="/" className="brand">
+        <Image src="/logo.png" alt="Bounty-board" width={34} height={34} priority />
+        <span className="brand-dim">/bounties</span>
+      </Link>
       <div className="nav-right">
         {link('/', 'board', 'board')}
         {link('/top', 'top', 'top 10')}
