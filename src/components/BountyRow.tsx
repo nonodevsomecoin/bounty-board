@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { Bounty } from '@/lib/types';
 import { useSignedAction } from './useSignedAction';
+import { postJson } from './postJson';
 
 export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: boolean }) {
   const { connected, sign } = useSignedAction();
@@ -14,14 +15,9 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
     setBusy(true); setMsg('');
     try {
       const signed = await sign('vote', bounty.id);
-      const res = await fetch(`/api/bounties/${bounty.id}/vote`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(signed),
-      });
-      const data = await res.json();
+      const data = await postJson(`/api/bounties/${bounty.id}/vote`, signed);
       if (data.ok) setCount((c) => c + 1);
-      else setMsg(data.error);
+      else setMsg(data.error ?? 'Error');
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -33,14 +29,11 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
     setBusy(true); setMsg('');
     try {
       const signed = await sign(kind, bounty.id);
-      const res = await fetch(`/api/admin/${kind}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...signed, id: bounty.id }),
-      });
-      const data = await res.json();
+      const data = await postJson(`/api/admin/${kind}`, { ...signed, id: bounty.id });
       if (data.ok) location.reload();
-      else setMsg(data.error);
+      else setMsg(data.error ?? 'Error');
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Error');
     } finally {
       setBusy(false);
     }

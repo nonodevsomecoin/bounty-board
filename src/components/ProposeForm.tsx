@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useSignedAction } from './useSignedAction';
+import { postJson } from './postJson';
 
 export function ProposeForm() {
   const { connected, sign } = useSignedAction();
@@ -16,14 +17,14 @@ export function ProposeForm() {
     setBusy(true); setMsg('');
     try {
       const signed = await sign('propose');
-      const res = await fetch('/api/bounties', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...signed, title, description, reward_sol: Number(reward) }),
+      const data = await postJson('/api/bounties', {
+        ...signed,
+        title,
+        description,
+        reward_sol: Number(reward),
       });
-      const data = await res.json();
       if (data.ok) location.reload();
-      else setMsg(data.error);
+      else setMsg(data.error ?? 'Error');
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Error');
     } finally {

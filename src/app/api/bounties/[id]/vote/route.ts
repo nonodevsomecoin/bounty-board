@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyHolder } from '@/lib/auth/guard';
 import { addVote } from '@/lib/db/votes';
+import { isBackendConfigured } from '@/lib/config';
 
 export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> },
 ) {
+  if (!isBackendConfigured()) {
+    return NextResponse.json(
+      { ok: false, error: 'Preview mode — backend not configured yet.' },
+      { status: 503 },
+    );
+  }
+
   const { id: bountyId } = await ctx.params;
   let body: Record<string, unknown>;
   try {

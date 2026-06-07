@@ -12,3 +12,14 @@ export function requireEnv(name: string): string {
   if (!v) throw new Error(`Missing required env var: ${name}`);
   return v;
 }
+
+// True once the backend is fully wired (Supabase + token mint). When false, the
+// app runs in preview mode: read paths show demo data and write routes return a
+// friendly 503 instead of crashing.
+export function isBackendConfigured(): boolean {
+  return (
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
+    !!process.env.NEXT_PUBLIC_TOKEN_MINT
+  );
+}

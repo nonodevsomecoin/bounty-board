@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyHolder } from '@/lib/auth/guard';
 import { getLastProposalMs, insertBounty } from '@/lib/db/bounties';
 import { checkCooldown } from '@/lib/cooldown';
+import { isBackendConfigured } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
+  if (!isBackendConfigured()) {
+    return NextResponse.json(
+      { ok: false, error: 'Preview mode — backend not configured yet.' },
+      { status: 503 },
+    );
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
