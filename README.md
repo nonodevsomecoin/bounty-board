@@ -29,4 +29,4 @@ Jupiter price API · Vitest.
 1. Push to GitHub (`nonodevsomecoin/bounty-board`).
 2. Import the repo in Vercel.
 3. Add all env vars from `.env.example` in Vercel Project Settings → Environment Variables.
-4. Deploy. Add the custom `.xyz` domain in Settings → Domains.
+4. Deploy. Add the custom `.xyz` domain in Settings → Domains. 
