@@ -3,23 +3,31 @@ import { useState } from 'react';
 import type { Bounty } from '@/lib/types';
 import { useSignedAction } from './useSignedAction';
 import { postJson } from './postJson';
+import { useVotes } from './VotesProvider';
 
 export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: boolean }) {
   const { connected, sign } = useSignedAction();
+  const { votes, setVote } = useVotes();
+  const myVote = votes[bounty.id] ?? 0;
   const [count, setCount] = useState(bounty.votes_count);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [doneOpen, setDoneOpen] = useState(false);
   const [proof, setProof] = useState('');
 
-  async function vote() {
+  async function vote(dir: 'up' | 'down') {
     if (!connected) { setMsg('Connect your wallet first'); return; }
     setBusy(true); setMsg('');
     try {
       const signed = await sign('vote', bounty.id);
-      const data = await postJson(`/api/bounties/${bounty.id}/vote`, signed);
-      if (data.ok) setCount((c) => c + 1);
-      else setMsg(data.error ?? 'Error');
+      const data = await postJson(`/api/bounties/${bounty.id}/vote`, { ...signed, dir });
+      if (data.ok) {
+        const d = data.data as { state: number; score: number };
+        setVote(bounty.id, d.state);
+        setCount(d.score);
+      } else {
+        setMsg(data.error ?? 'Error');
+      }
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -48,10 +56,25 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
 
   return (
     <div className="row">
-      <button className="vote" onClick={vote} disabled={busy} aria-label="upvote">
-        <span className="arrow">▲</span>
+      <div className="vote">
+        <button
+          className={`arrow up${myVote === 1 ? ' active' : ''}`}
+          onClick={() => vote('up')}
+          disabled={busy}
+          aria-label="upvote"
+        >
+          ▲
+        </button>
         <span className="count">{count}</span>
-      </button>
+        <button
+          className={`arrow down${myVote === -1 ? ' active' : ''}`}
+          onClick={() => vote('down')}
+          disabled={busy}
+          aria-label="downvote"
+        >
+          ▼
+        </button>
+      </div>
       <div className="row-body">
         <div className="row-title">{bounty.title}</div>
         <div className="row-desc">{bounty.description}</div>

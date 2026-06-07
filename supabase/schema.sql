@@ -19,6 +19,7 @@ create table if not exists votes (
   id         uuid primary key default gen_random_uuid(),
   bounty_id  uuid not null references bounties(id) on delete cascade,
   wallet     text not null,
+  value      smallint not null default 1 check (value in (-1, 1)),
   created_at timestamptz not null default now(),
   unique (bounty_id, wallet)
 );
@@ -27,16 +28,23 @@ create table if not exists admins (
   wallet text primary key
 );
 
--- Keep votes_count in sync automatically.
+-- Keep votes_count = sum(value) in sync on insert / update / delete.
 create or replace function bump_votes_count() returns trigger as $$
 begin
-  update bounties set votes_count = votes_count + 1 where id = new.bounty_id;
+  if (tg_op = 'INSERT') then
+    update bounties set votes_count = votes_count + new.value where id = new.bounty_id;
+  elsif (tg_op = 'UPDATE') then
+    update bounties set votes_count = votes_count + (new.value - old.value) where id = new.bounty_id;
+  elsif (tg_op = 'DELETE') then
+    update bounties set votes_count = votes_count - old.value where id = old.bounty_id;
+    return old;
+  end if;
   return new;
 end;
 $$ language plpgsql;
 
 drop trigger if exists trg_bump_votes on votes;
-create trigger trg_bump_votes after insert on votes
+create trigger trg_bump_votes after insert or update or delete on votes
   for each row execute function bump_votes_count();
 
 -- Row Level Security: public can read, only the service role can write.

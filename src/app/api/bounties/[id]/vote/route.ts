@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyHolder } from '@/lib/auth/guard';
-import { addVote } from '@/lib/db/votes';
+import { castVote } from '@/lib/db/votes';
 import { isDbConfigured } from '@/lib/config';
 
 export async function POST(
@@ -27,9 +27,7 @@ export async function POST(
     return NextResponse.json({ ok: false, error: guard.error }, { status: guard.status });
   }
 
-  const result = await addVote(bountyId, guard.wallet);
-  if (result.duplicate) {
-    return NextResponse.json({ ok: false, error: 'You already voted on this bounty' }, { status: 409 });
-  }
-  return NextResponse.json({ ok: true, data: { voted: true } }, { status: 201 });
+  const value: 1 | -1 = body.dir === 'down' ? -1 : 1;
+  const result = await castVote(bountyId, guard.wallet, value);
+  return NextResponse.json({ ok: true, data: result });
 }
