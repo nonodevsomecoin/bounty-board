@@ -1,7 +1,9 @@
-import { supabaseAnon, supabaseServer } from '@/lib/db/client';
+import { supabaseAnon, supabaseServer, isSupabaseConfigured } from '@/lib/db/client';
+import { demoActiveBounties, demoDoneBounties } from '@/lib/db/demo';
 import type { Bounty } from '@/lib/types';
 
 export async function listActiveBounties(): Promise<Bounty[]> {
+  if (!isSupabaseConfigured()) return demoActiveBounties;
   const { data, error } = await supabaseAnon()
     .from('bounties')
     .select('*')
@@ -13,6 +15,7 @@ export async function listActiveBounties(): Promise<Bounty[]> {
 }
 
 export async function topBounties(limit = 10): Promise<Bounty[]> {
+  if (!isSupabaseConfigured()) return demoActiveBounties.slice(0, limit);
   const { data, error } = await supabaseAnon()
     .from('bounties')
     .select('*')
@@ -24,6 +27,7 @@ export async function topBounties(limit = 10): Promise<Bounty[]> {
 }
 
 export async function listDoneBounties(): Promise<Bounty[]> {
+  if (!isSupabaseConfigured()) return demoDoneBounties;
   const { data, error } = await supabaseAnon()
     .from('bounties')
     .select('*')
