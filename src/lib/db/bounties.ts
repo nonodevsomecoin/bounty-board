@@ -4,37 +4,52 @@ import type { Bounty } from '@/lib/types';
 
 export async function listActiveBounties(): Promise<Bounty[]> {
   if (!isSupabaseConfigured()) return demoActiveBounties;
-  const { data, error } = await supabaseAnon()
-    .from('bounties')
-    .select('*')
-    .eq('status', 'active')
-    .order('votes_count', { ascending: false })
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Bounty[];
+  try {
+    const { data, error } = await supabaseAnon()
+      .from('bounties')
+      .select('*')
+      .eq('status', 'active')
+      .order('votes_count', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Bounty[];
+  } catch (e) {
+    console.error('listActiveBounties failed:', e);
+    return [];
+  }
 }
 
 export async function topBounties(limit = 10): Promise<Bounty[]> {
   if (!isSupabaseConfigured()) return demoActiveBounties.slice(0, limit);
-  const { data, error } = await supabaseAnon()
-    .from('bounties')
-    .select('*')
-    .eq('status', 'active')
-    .order('votes_count', { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return (data ?? []) as Bounty[];
+  try {
+    const { data, error } = await supabaseAnon()
+      .from('bounties')
+      .select('*')
+      .eq('status', 'active')
+      .order('votes_count', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []) as Bounty[];
+  } catch (e) {
+    console.error('topBounties failed:', e);
+    return [];
+  }
 }
 
 export async function listDoneBounties(): Promise<Bounty[]> {
   if (!isSupabaseConfigured()) return demoDoneBounties;
-  const { data, error } = await supabaseAnon()
-    .from('bounties')
-    .select('*')
-    .eq('status', 'done')
-    .order('votes_count', { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Bounty[];
+  try {
+    const { data, error } = await supabaseAnon()
+      .from('bounties')
+      .select('*')
+      .eq('status', 'done')
+      .order('votes_count', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Bounty[];
+  } catch (e) {
+    console.error('listDoneBounties failed:', e);
+    return [];
+  }
 }
 
 export async function getLastProposalMs(wallet: string): Promise<number | null> {
