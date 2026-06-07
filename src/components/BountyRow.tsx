@@ -30,11 +30,12 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
   async function adminAction(kind: 'done' | 'delete', proofUrl?: string) {
     setBusy(true); setMsg('');
     try {
-      const signed = await sign(kind, bounty.id);
+      // Admin actions are authorized by the session cookie (sent automatically),
+      // not by a wallet signature.
       const payload =
         kind === 'done'
-          ? { ...signed, id: bounty.id, proof_url: proofUrl?.trim() || null }
-          : { ...signed, id: bounty.id };
+          ? { id: bounty.id, proof_url: proofUrl?.trim() || null }
+          : { id: bounty.id };
       const data = await postJson(`/api/admin/${kind}`, payload);
       if (data.ok) location.reload();
       else setMsg(data.error ?? 'Error');

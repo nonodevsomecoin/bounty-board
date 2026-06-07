@@ -14,14 +14,16 @@ Jupiter price API · Vitest.
    - Supabase URL + anon key + service-role key
    - `NEXT_PUBLIC_TOKEN_MINT` (the memecoin mint address)
    - `SOLANA_RPC_URL` and `NEXT_PUBLIC_SOLANA_RPC_URL`
-4. Add admin wallets: `insert into admins (wallet) values ('<address>');`
-5. `npm run dev`
+   - `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (admin login)
+4. `npm run dev` — admin panel at `/admin` (in dev, login is `admin` / `admin`
+   if `ADMIN_*` are unset).
 
 ## Rules enforced server-side
 - Hold ≥ $10 of the token to propose or vote (balance × Jupiter price).
 - One vote per wallet per bounty.
 - 5 minutes between proposals per wallet.
-- Only allow-listed wallets can mark done / delete.
+- Admin moderation (mark done / delete) requires a valid admin login session
+  (single shared account from env vars; demo `admin`/`admin` in dev only).
 
 ## Deploy (Vercel)
 1. Push to GitHub (`nonodevsomecoin/bounty-board`).

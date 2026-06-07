@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyIdentity } from '@/lib/auth/guard';
-import { isAdmin } from '@/lib/db/admins';
+import { isAdminAuthenticated } from '@/lib/auth/adminSession.server';
 import { markBountyDone } from '@/lib/db/bounties';
 import { isBackendConfigured } from '@/lib/config';
 
@@ -10,6 +9,10 @@ export async function POST(req: NextRequest) {
       { ok: false, error: 'Preview mode — backend not configured yet.' },
       { status: 503 },
     );
+  }
+
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ ok: false, error: 'Not authenticated' }, { status: 401 });
   }
 
   let body: Record<string, unknown>;
@@ -22,14 +25,6 @@ export async function POST(req: NextRequest) {
   const id = String(body.id ?? '');
   if (!id) {
     return NextResponse.json({ ok: false, error: 'Missing bounty id' }, { status: 400 });
-  }
-
-  const guard = verifyIdentity(body, { action: 'done', resourceId: id });
-  if (!guard.ok) {
-    return NextResponse.json({ ok: false, error: guard.error }, { status: guard.status });
-  }
-  if (!(await isAdmin(guard.wallet))) {
-    return NextResponse.json({ ok: false, error: 'Not authorized' }, { status: 403 });
   }
 
   // Optional proof link (photo/video) attached when completing the bounty.

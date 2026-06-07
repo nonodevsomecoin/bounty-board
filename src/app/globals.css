@@ -70,7 +70,12 @@ body {
 .row-error { color: #ff6b6b; font-size: 12px; margin-top: 4px; }
 .empty { color: var(--green-dim); padding: 24px 0; }
 .page-title { color: var(--green); font-size: 18px; }
-.admin-gate { padding: 40px 0; display: grid; gap: 12px; }
+.admin-head { display: flex; justify-content: space-between; align-items: center; }
+.logout-btn {
+  background: none; border: 1px solid var(--green-dim); color: var(--green-dim);
+  padding: 4px 10px; cursor: pointer; font: inherit; font-size: 12px;
+}
+.login-form { max-width: 320px; }
 
 /* Tone down the default wallet-adapter button to match the theme */
 .wallet-adapter-button {

@@ -87,10 +87,13 @@ ni pour les droits admin.
 **Contrainte d'unicité : `(bounty_id, wallet)`** → un wallet ne peut voter qu'une
 fois par bounty.
 
-### Table `admins`
-| champ | type | notes |
-|---|---|---|
-| wallet | text (PK) | adresse autorisée à modérer |
+### Authentification admin (pas de table)
+L'admin n'utilise **pas** de wallet. Un **compte unique partagé** (login + mot de
+passe) est défini par variables d'environnement (`ADMIN_USERNAME`,
+`ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`). Après login, une **session par cookie
+httpOnly signé** (HMAC, expiration 12 h) autorise les actions de modération.
+En développement, si les variables ne sont pas définies, le panneau accepte
+`admin` / `admin` (désactivé en production).
 
 ## 6. Règles métier & anti-triche
 
@@ -104,8 +107,8 @@ fois par bounty.
 - **Preuve de possession du wallet :** l'utilisateur signe un message avec sa clé
   privée ; le serveur vérifie la signature avant toute action (anti-usurpation
   d'adresse).
-- **Droits admin :** une action de modération n'est acceptée que si le wallet
-  signataire figure dans la table `admins`.
+- **Droits admin :** la modération exige une **session admin valide** (login +
+  mot de passe → cookie signé). Aucun wallet requis côté admin.
 
 ## 7. Flux clés
 
@@ -128,9 +131,12 @@ fois par bounty.
 4. Insérer le bounty (`status = active`).
 
 ### Modération (admin)
-1. Vérifier la signature + appartenance à `admins`.
-2. Action : **supprimer** un bounty, ou le passer en **`status = done`**.
-3. Un bounty `done` quitte le board et le Top 10, et apparaît dans `/done`.
+1. L'admin se connecte sur `/admin` (login + mot de passe) → cookie de session.
+2. Les routes admin vérifient la session (cookie), pas de wallet.
+3. Action : **supprimer** un bounty, ou le passer en **`status = done`** avec un
+   **lien de preuve optionnel** (photo/vidéo, validé http/https).
+4. Un bounty `done` quitte le board et le Top 10, et apparaît dans `/done` (avec
+   le lien de preuve s'il existe).
 
 ## 8. Pages (interface en anglais)
 
@@ -139,8 +145,9 @@ fois par bounty.
   Chaque ligne : flèche upvote + compteur, titre, ligne meta (reward / auteur / date).
 - **`/top` — Top 10 :** les 10 bounties `active` les plus upvotés (all-time).
 - **`/done` — Done :** les bounties `status = done`.
-- **`/admin` — Admin :** visible/fonctionnel uniquement pour les wallets admin ;
-  supprimer ou marquer "done".
+- **`/admin` — Admin :** formulaire **login + mot de passe** ; une fois connecté,
+  liste des bounties actifs avec **supprimer** / **marquer "done"** (+ lien de
+  preuve optionnel) et un bouton **log out**.
 
 **Esthétique :** terminal dark / degen — fond sombre, police monospace, accent
 vert néon. Épuré et minimaliste. (Direction visuelle validée en brainstorming.)
