@@ -54,3 +54,13 @@ create policy "public read votes" on votes for select using (true);
 
 create index if not exists idx_bounties_active_votes
   on bounties (votes_count desc) where status = 'active';
+
+-- Key/value app settings (e.g. the live token mint, set from the admin panel).
+-- Read/written only by the service-role client; RLS on, no public policies.
+create table if not exists app_settings (
+  key   text primary key,
+  value text
+);
+insert into app_settings (key, value) values ('token_mint', null)
+  on conflict (key) do nothing;
+alter table app_settings enable row level security;
