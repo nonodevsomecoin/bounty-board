@@ -11,8 +11,8 @@ export function NavBar({ active }: { active: 'board' | 'top' | 'done' }) {
   return (
     <nav className="nav">
       <Link href="/" className="brand">
-        <Image src="/logo.png" alt="Bounty-board" width={34} height={34} priority />
-        <span className="brand-dim">/bounties</span>
+        <Image src="/logo.png" alt="Bounty-board" width={44} height={44} priority />
+        <span>bounty-board<span className="brand-dim">/bounties</span></span>
       </Link>
       <div className="nav-right">
         {link('/', 'board', 'board')}
