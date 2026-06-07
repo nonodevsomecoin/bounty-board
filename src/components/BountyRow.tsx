@@ -13,7 +13,7 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
     if (!connected) { setMsg('Connect your wallet first'); return; }
     setBusy(true); setMsg('');
     try {
-      const signed = await sign('vote');
+      const signed = await sign('vote', bounty.id);
       const res = await fetch(`/api/bounties/${bounty.id}/vote`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -32,7 +32,7 @@ export function BountyRow({ bounty, admin = false }: { bounty: Bounty; admin?: b
   async function adminAction(kind: 'done' | 'delete') {
     setBusy(true); setMsg('');
     try {
-      const signed = await sign(kind);
+      const signed = await sign(kind, bounty.id);
       const res = await fetch(`/api/admin/${kind}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

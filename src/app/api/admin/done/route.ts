@@ -11,7 +11,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const guard = verifyIdentity(body);
+  const id = String(body.id ?? '');
+  if (!id) {
+    return NextResponse.json({ ok: false, error: 'Missing bounty id' }, { status: 400 });
+  }
+
+  const guard = verifyIdentity(body, { action: 'done', resourceId: id });
   if (!guard.ok) {
     return NextResponse.json({ ok: false, error: guard.error }, { status: guard.status });
   }
@@ -19,10 +24,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Not authorized' }, { status: 403 });
   }
 
-  const id = String(body.id ?? '');
-  if (!id) {
-    return NextResponse.json({ ok: false, error: 'Missing bounty id' }, { status: 400 });
-  }
   await markBountyDone(id);
   return NextResponse.json({ ok: true, data: { id, status: 'done' } });
 }

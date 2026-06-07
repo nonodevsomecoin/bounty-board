@@ -1,6 +1,7 @@
 'use client';
 import { useWallet } from '@solana/wallet-adapter-react';
 import bs58 from 'bs58';
+import { buildMessage } from '@/lib/auth/message';
 
 export interface SignedPayload {
   wallet: string;
@@ -11,10 +12,9 @@ export interface SignedPayload {
 export function useSignedAction() {
   const { publicKey, signMessage } = useWallet();
 
-  async function sign(action: string): Promise<SignedPayload> {
+  async function sign(action: string, resourceId?: string): Promise<SignedPayload> {
     if (!publicKey || !signMessage) throw new Error('Connect your wallet first');
-    const ts = Date.now();
-    const message = `$TICKER Bounties — proving wallet ownership to ${action}.\nTimestamp: ${ts}`;
+    const message = buildMessage(action, Date.now(), resourceId);
     const sig = await signMessage(new TextEncoder().encode(message));
     return {
       wallet: publicKey.toBase58(),
