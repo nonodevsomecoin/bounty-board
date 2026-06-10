@@ -16,28 +16,30 @@ function signedBody(action: string, ts: number, resourceId?: string) {
 function deps(over: Partial<HolderDeps> = {}): HolderDeps {
   return {
     getMint: vi.fn().mockResolvedValue(MINT),
-    getJupiterPrice: vi.fn().mockResolvedValue(0.5),
+    hasMigrated: vi.fn().mockResolvedValue(true),
+    getPrice: vi.fn().mockResolvedValue(0.5),
     getBalance: vi.fn().mockResolvedValue(100), // $50 by default
     ...over,
   };
 }
 
-describe('verifyHolder Jupiter gate', () => {
+describe('verifyHolder migration gate', () => {
   const now = 1_000_000;
 
-  it('skips the holding check (wallet connection only) while Jupiter does not price the token', async () => {
+  it('skips the holding check (wallet connection only) while the token is on the bonding curve', async () => {
     const d = deps({
-      getJupiterPrice: vi.fn().mockResolvedValue(0),
+      hasMigrated: vi.fn().mockResolvedValue(false),
       getBalance: vi.fn().mockResolvedValue(0), // holds nothing
     });
     const r = await verifyHolder(signedBody('propose', now), { action: 'propose' }, now, d);
     expect(r.ok).toBe(true);
-    expect(d.getBalance).not.toHaveBeenCalled(); // no balance lookup before launch
+    expect(d.getBalance).not.toHaveBeenCalled(); // no balance lookup pre-migration
+    expect(d.getPrice).not.toHaveBeenCalled();
   });
 
-  it('enforces the $10 threshold once Jupiter prices the token', async () => {
+  it('enforces the $10 threshold once the token has migrated', async () => {
     const d = deps({
-      getJupiterPrice: vi.fn().mockResolvedValue(0.01),
+      getPrice: vi.fn().mockResolvedValue(0.01),
       getBalance: vi.fn().mockResolvedValue(100), // $1
     });
     const r = await verifyHolder(signedBody('propose', now), { action: 'propose' }, now, d);
@@ -45,19 +47,28 @@ describe('verifyHolder Jupiter gate', () => {
     if (!r.ok) expect(r.status).toBe(403);
   });
 
-  it('accepts a sufficient holder once Jupiter prices the token', async () => {
+  it('accepts a sufficient holder once the token has migrated', async () => {
     const d = deps(); // 100 * 0.5 = $50
     const r = await verifyHolder(signedBody('propose', now), { action: 'propose' }, now, d);
     expect(r.ok).toBe(true);
   });
 
-  it('still rejects an invalid signature regardless of Jupiter state', async () => {
+  it('does not false-reject when a migrated token is momentarily unpriced', async () => {
+    const d = deps({
+      getPrice: vi.fn().mockResolvedValue(0),
+      getBalance: vi.fn().mockResolvedValue(0),
+    });
+    const r = await verifyHolder(signedBody('propose', now), { action: 'propose' }, now, d);
+    expect(r.ok).toBe(true);
+  });
+
+  it('still rejects an invalid signature regardless of migration state', async () => {
     const body = signedBody('propose', now);
     const r = await verifyHolder(
       { ...body, message: body.message + ' ' },
       { action: 'propose' },
       now,
-      deps({ getJupiterPrice: vi.fn().mockResolvedValue(0) }),
+      deps({ hasMigrated: vi.fn().mockResolvedValue(false) }),
     );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.status).toBe(401);

@@ -2,7 +2,8 @@ import { verifySignature } from '@/lib/auth/signature';
 import { buildMessage, extractTimestamp, isTimestampFresh } from '@/lib/auth/message';
 import { checkEligibility } from '@/lib/eligibility';
 import { getTokenBalance } from '@/lib/solana/tokenBalance';
-import { getJupiterPriceUsd } from '@/lib/price/jupiterPrice';
+import { getTokenPriceUsd } from '@/lib/price/jupiterPrice';
+import { hasTokenMigrated } from '@/lib/token/migration';
 import { SOLANA_RPC_URL } from '@/lib/config';
 import { getTokenMint } from '@/lib/tokenConfig';
 
@@ -48,20 +49,23 @@ export function verifyIdentity(
 // Injectable side-effects so the holding logic can be unit-tested.
 export interface HolderDeps {
   getMint: () => Promise<string>;
-  getJupiterPrice: (mint: string) => Promise<number>;
+  hasMigrated: (mint: string) => Promise<boolean>;
+  getPrice: (mint: string) => Promise<number>;
   getBalance: (wallet: string, mint: string) => Promise<number>;
 }
 
 const defaultHolderDeps: HolderDeps = {
   getMint: getTokenMint,
-  getJupiterPrice: (mint) => getJupiterPriceUsd(mint),
+  hasMigrated: (mint) => hasTokenMigrated(mint),
+  getPrice: (mint) => getTokenPriceUsd(mint),
   getBalance: (wallet, mint) => getTokenBalance(SOLANA_RPC_URL, wallet, mint),
 };
 
-// Verifies identity AND, once the token is live on Jupiter, the $10 holding
-// threshold. While Jupiter does not yet price the mint we cannot value holdings,
-// so a connected + signature-verified wallet is enough; the threshold re-engages
-// automatically as soon as Jupiter starts pricing the token.
+// Verifies identity AND, once the token has migrated off the pump.fun bonding
+// curve to a real DEX, the $10 holding threshold. While the token is still on
+// the bonding curve (pre-graduation), holders may not have bought in yet, so a
+// connected + signature-verified wallet is enough. The threshold engages
+// automatically the moment the token migrates.
 export async function verifyHolder(
   body: SignedBody,
   spec: ActionSpec,
@@ -78,9 +82,14 @@ export async function verifyHolder(
       error: 'Proposals and voting open when the token goes live. Stay tuned! 🚀',
     };
   }
-  const price = await deps.getJupiterPrice(mint);
+  const migrated = await deps.hasMigrated(mint);
+  if (!migrated) {
+    // Still on the bonding curve — wallet connection is all we require.
+    return { ok: true, wallet: id.wallet };
+  }
+  const price = await deps.getPrice(mint);
   if (price <= 0) {
-    // Not detected by Jupiter yet — wallet connection is all we can require.
+    // Migrated but momentarily unpriced — don't false-reject a real holder.
     return { ok: true, wallet: id.wallet };
   }
   const balance = await deps.getBalance(id.wallet, mint);

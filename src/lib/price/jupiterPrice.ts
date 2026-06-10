@@ -42,13 +42,3 @@ export async function getTokenPriceUsd(
   if (jup > 0) return jup;
   return fromDexScreener(mint, fetchImpl);
 }
-
-// Jupiter-only price. 0 means Jupiter does not (yet) index/price this mint —
-// used as the signal for "the token isn't live on Jupiter yet".
-export async function getJupiterPriceUsd(
-  mint: string = TOKEN_MINT,
-  fetchImpl: typeof fetch = fetch,
-): Promise<number> {
-  if (!mint) return 0;
-  return fromJupiter(mint, fetchImpl);
-}
